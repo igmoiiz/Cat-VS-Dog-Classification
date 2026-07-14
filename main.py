@@ -58,8 +58,8 @@ train_data = image_dataset_from_directory(
     validation_split=0.2,
     subset="training",
     seed=42,
-    image_size=(150, 150),
-    batch_size=32
+    image_size=(128, 128),
+    batch_size=16
 )
 
 val_data = image_dataset_from_directory(
@@ -67,8 +67,8 @@ val_data = image_dataset_from_directory(
     validation_split=0.2,
     subset="validation",
     seed=42,
-    image_size=(150, 150),
-    batch_size=32
+    image_size=(128, 128),
+    batch_size=16
 )
 
 # Verifying the Dataset is Cleaned
@@ -78,10 +78,6 @@ print("Dogs:", len(os.listdir(os.path.join(dataset_path, "Dog"))))
 # Checking the Classes from the Dataset
 class_names = train_data.class_names
 print("Classes:", class_names)
-
-# Ignoring any Remaining Bad Files
-train_data = train_data.ignore_errors()
-val_data = val_data.ignore_errors()
 
 # Data Augmentation
 data_augmentation = tf.keras.Sequential([
@@ -95,26 +91,35 @@ data_augmentation = tf.keras.Sequential([
 # Normalization
 normalization = tf.keras.layers.Rescaling(1./255)
 
-train_data = train_data.map(
-    lambda x, y: (
-        normalization(data_augmentation(x, training=True)),
-        y
-    )
-)
-
-val_data = val_data.map(
-    lambda x, y: (
-        normalization(x),
-        y
-    )
-)
-
-
-# Performance Optimization
 AUTOTUNE = tf.data.AUTOTUNE
 
-train_data = train_data.cache().prefetch(AUTOTUNE)
-val_data = val_data.cache().prefetch(AUTOTUNE)
+train_data = (
+    train_data
+    .map(
+        lambda x, y: (
+            normalization(
+                data_augmentation(x, training=True)
+            ),
+            y
+        ),
+        num_parallel_calls=AUTOTUNE
+    )
+    .cache()
+    .prefetch(AUTOTUNE)
+)
+
+val_data = (
+    val_data
+    .map(
+        lambda x, y: (
+            normalization(x),
+            y
+        ),
+        num_parallel_calls=AUTOTUNE
+    )
+    .cache()
+    .prefetch(AUTOTUNE)
+)
 
 
 # Display Sample Images
@@ -180,6 +185,9 @@ callback = EarlyStopping(
     restore_best_weights=True
 )
 
+# Checking Cardinality
+print(tf.data.experimental.cardinality(train_data))
+print(tf.data.experimental.cardinality(val_data))
 
 # Train
 history = model.fit(
