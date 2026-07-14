@@ -16,7 +16,8 @@ from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, BatchNormalizat
 
 # Settings
 warnings.simplefilter("ignore", FutureWarning)
-os.makedirs("Visualization", exist_ok=True)
+os.makedirs("visualization", exist_ok=True)
+os.makedirs("model", exist_ok=True)
 
 dataset_path = "dataset"
 
@@ -128,7 +129,7 @@ for i in range(9):
     plt.axis("off")
 
 plt.tight_layout()
-plt.savefig("Visualization/Sample_Images.png")
+plt.savefig("visualization/Sample_Images.png")
 plt.show()
 
 
@@ -208,7 +209,7 @@ plt.ylabel("Accuracy")
 plt.legend()
 
 plt.tight_layout()
-plt.savefig("Visualization/Accuracy.png")
+plt.savefig("visualization/Accuracy.png")
 plt.show()
 
 
@@ -224,7 +225,7 @@ plt.ylabel("Loss")
 plt.legend()
 
 plt.tight_layout()
-plt.savefig("Visualization/Loss.png")
+plt.savefig("visualization/Loss.png")
 plt.show()
 
 
@@ -254,7 +255,7 @@ plt.xlabel("Predicted")
 plt.ylabel("Actual")
 
 plt.tight_layout()
-plt.savefig("Visualization/Confusion_Matrix.png")
+plt.savefig("visualization/Confusion_Matrix.png")
 plt.show()
 
 
@@ -273,9 +274,9 @@ plt.title("ROC Curve")
 plt.legend()
 
 plt.tight_layout()
-plt.savefig("Visualization/ROC_Curve.png")
+plt.savefig("visualization/ROC_Curve.png")
 plt.show()
 
 # Save The Model
-model.save("cats_vs_dogs_cnn.keras")
+model.save("model/cats_vs_dogs_cnn.keras")
 print("Model saved successfully.")
