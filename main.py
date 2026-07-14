@@ -23,9 +23,13 @@ dataset_path = "dataset"
 
 
 # Removing the Corrupted Images from the Dataset
+from PIL import Image
+import os
+
 bad_files = []
 
 for class_name in ["Cat", "Dog"]:
+
     folder = os.path.join(dataset_path, class_name)
 
     for filename in os.listdir(folder):
@@ -33,21 +37,26 @@ for class_name in ["Cat", "Dog"]:
         filepath = os.path.join(folder, filename)
 
         try:
-            # Empty file
             if os.path.getsize(filepath) == 0:
-                bad_files.append(filepath)
-                continue
+                raise ValueError("Empty file")
 
             with Image.open(filepath) as img:
                 img.load()
 
-        except Exception:
+                # Valid modes
+                valid_modes = ["L", "RGB", "RGBA"]
+
+                if img.mode not in valid_modes:
+                    raise ValueError(f"Invalid image mode: {img.mode}")
+
+        except Exception as e:
+            print(f"Removing: {filepath}")
+            print(f"Reason: {e}\n")
             bad_files.append(filepath)
 
 print(f"Found {len(bad_files)} bad images")
 
 for file in bad_files:
-    print(file)
     os.remove(file)
 
 print("Finished removing bad images.")
