@@ -23,9 +23,6 @@ dataset_path = "dataset"
 
 
 # Removing the Corrupted Images from the Dataset
-from PIL import Image
-import os
-
 bad_files = []
 
 for class_name in ["Cat", "Dog"]:
@@ -37,29 +34,31 @@ for class_name in ["Cat", "Dog"]:
         filepath = os.path.join(folder, filename)
 
         try:
+            # Empty file
             if os.path.getsize(filepath) == 0:
-                raise ValueError("Empty file")
+                raise Exception("Empty file")
 
-            with Image.open(filepath) as img:
-                img.load()
+            image = tf.io.read_file(filepath)
 
-                # Valid modes
-                valid_modes = ["L", "RGB", "RGBA"]
+            image = tf.io.decode_image(
+                image,
+                channels=3,
+                expand_animations=False
+            )
 
-                if img.mode not in valid_modes:
-                    raise ValueError(f"Invalid image mode: {img.mode}")
+            image.numpy()
 
         except Exception as e:
             print(f"Removing: {filepath}")
-            print(f"Reason: {e}\n")
+            print(e)
             bad_files.append(filepath)
 
-print(f"Found {len(bad_files)} bad images")
+print(f"\nFound {len(bad_files)} bad images")
 
 for file in bad_files:
     os.remove(file)
 
-print("Finished removing bad images.")
+print("Finished cleaning dataset.\n")
 
 # Load Dataset
 train_data = image_dataset_from_directory(
@@ -67,8 +66,10 @@ train_data = image_dataset_from_directory(
     validation_split=0.2,
     subset="training",
     seed=42,
-    image_size=(128, 128),
-    batch_size=16
+    image_size=(128,128),
+    batch_size=16,
+    color_mode="rgb",
+    shuffle=True
 )
 
 val_data = image_dataset_from_directory(
@@ -76,8 +77,10 @@ val_data = image_dataset_from_directory(
     validation_split=0.2,
     subset="validation",
     seed=42,
-    image_size=(128, 128),
-    batch_size=16
+    image_size=(128,128),
+    batch_size=16,
+    color_mode="rgb",
+    shuffle=False
 )
 
 # Verifying the Dataset is Cleaned
@@ -98,37 +101,30 @@ data_augmentation = tf.keras.Sequential([
 
 
 # Normalization
-normalization = tf.keras.layers.Rescaling(1./255)
-
 AUTOTUNE = tf.data.AUTOTUNE
 
-train_data = (
-    train_data
-    .map(
-        lambda x, y: (
-            normalization(
-                data_augmentation(x, training=True)
-            ),
-            y
+normalization = tf.keras.layers.Rescaling(1./255)
+
+train_data = train_data.map(
+    lambda x, y: (
+        normalization(
+            data_augmentation(x, training=True)
         ),
-        num_parallel_calls=AUTOTUNE
-    )
-    .cache()
-    .prefetch(AUTOTUNE)
+        y
+    ),
+    num_parallel_calls=AUTOTUNE
 )
 
-val_data = (
-    val_data
-    .map(
-        lambda x, y: (
-            normalization(x),
-            y
-        ),
-        num_parallel_calls=AUTOTUNE
-    )
-    .cache()
-    .prefetch(AUTOTUNE)
+val_data = val_data.map(
+    lambda x, y: (
+        normalization(x),
+        y
+    ),
+    num_parallel_calls=AUTOTUNE
 )
+
+train_data = train_data.prefetch(AUTOTUNE)
+val_data = val_data.prefetch(AUTOTUNE)
 
 
 # Display Sample Images
@@ -144,7 +140,7 @@ for i in range(9):
 
 plt.tight_layout()
 plt.savefig("visualization/Sample_Images.png")
-plt.show()
+plt.close()
 
 
 # CNN Model
@@ -227,7 +223,7 @@ plt.legend()
 
 plt.tight_layout()
 plt.savefig("visualization/Accuracy.png")
-plt.show()
+plt.close()
 
 
 # Loss Plot
@@ -243,7 +239,7 @@ plt.legend()
 
 plt.tight_layout()
 plt.savefig("visualization/Loss.png")
-plt.show()
+plt.close()
 
 
 # Predictions
@@ -273,7 +269,7 @@ plt.ylabel("Actual")
 
 plt.tight_layout()
 plt.savefig("visualization/Confusion_Matrix.png")
-plt.show()
+plt.close()
 
 
 # Plotting the ROC Curve
@@ -292,7 +288,7 @@ plt.legend()
 
 plt.tight_layout()
 plt.savefig("visualization/ROC_Curve.png")
-plt.show()
+plt.close()
 
 # Save The Model
 model.save("model/cats_vs_dogs_cnn.keras")
