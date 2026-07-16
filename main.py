@@ -186,7 +186,7 @@ model.compile(
 # Early Stopping
 callback = EarlyStopping(
     monitor="val_loss",
-    patience=8,
+    patience=5,
     restore_best_weights=True
 )
 
@@ -198,7 +198,7 @@ print(tf.data.experimental.cardinality(val_data))
 history = model.fit(
     train_data,
     validation_data=val_data,
-    epochs=30,
+    epochs=20,
     callbacks=[callback]
 )
 
