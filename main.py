@@ -9,10 +9,10 @@ import matplotlib.pyplot as plt
 
 from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
 
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.utils import image_dataset_from_directory
-from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, BatchNormalization, GlobalAveragePooling2D, Dense, Dropout
+from tensorflow.keras.models import Sequential # pyright: ignore[reportMissingModuleSource]
+from tensorflow.keras.callbacks import EarlyStopping # pyright: ignore[reportMissingModuleSource]
+from tensorflow.keras.utils import image_dataset_from_directory # pyright: ignore[reportMissingImports]
+from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, BatchNormalization, GlobalAveragePooling2D, Dense, Dropout # pyright: ignore[reportMissingModuleSource]
 
 # Settings
 warnings.simplefilter("ignore", FutureWarning)
