@@ -198,7 +198,7 @@ print(tf.data.experimental.cardinality(val_data))
 history = model.fit(
     train_data,
     validation_data=val_data,
-    epochs=10,
+    epochs=20,
     callbacks=[callback]
 )
 
